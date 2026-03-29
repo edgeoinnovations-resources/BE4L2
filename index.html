@@ -593,6 +593,85 @@
             background-color: #d4b968;
         }
 
+        /* Check/Reset Buttons */
+        .check-btn, .reset-btn {
+            padding: 10px 20px;
+            margin: 5px 5px 5px 0;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .check-btn {
+            background-color: #c8a951;
+            color: #1a3a5c;
+        }
+
+        .check-btn:hover {
+            background-color: #e0c169;
+        }
+
+        .reset-btn {
+            background-color: #8a9ea7;
+            color: #fff;
+        }
+
+        .reset-btn:hover {
+            background-color: #9aaebc;
+        }
+
+        /* Feedback box */
+        .feedback-box {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .feedback-box.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .feedback-box.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        /* Fill-in-blank correct/incorrect */
+        .fill-blank-dropdown.correct {
+            background-color: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .fill-blank-dropdown.incorrect {
+            background-color: #ffebee;
+            border-color: #f44336;
+        }
+
+        /* Relay item correct/incorrect in drop zone */
+        .relay-drop.correct-drop {
+            border-color: #4caf50;
+            background-color: #e8f5e9;
+        }
+
+        .relay-drop.incorrect-drop {
+            border-color: #f44336;
+            background-color: #ffebee;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header h1 {
@@ -671,27 +750,18 @@
                     <div class="vocab-container">
                         <div class="vocab-column">
                             <h4>Terms</h4>
-                            <div draggable="true" class="vocab-term" data-vocab="Great Arid Zone">Great Arid Zone</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Biological Hardware">Biological Hardware</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Relay System">Relay System</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Two-Way Bandwidth">Two-Way Bandwidth</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Bactrian Camel">Bactrian Camel</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Fergana Horse">Fergana Horse</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Caravan">Caravan</div>
-                            <div draggable="true" class="vocab-term" data-vocab="Middlemen">Middlemen</div>
+                            <div id="vocabTermsContainer"></div>
                         </div>
                         <div class="vocab-column">
                             <h4>Definitions</h4>
-                            <div class="definition-box" data-def="Great Arid Zone">A continuous belt of deserts, mountains, and grassy steppes across Afroeurasia</div>
-                            <div class="definition-box" data-def="Biological Hardware">The domestication and use of specific work animals to cross extreme terrain</div>
-                            <div class="definition-box" data-def="Relay System">A system of trade where goods change hands through various middlemen</div>
-                            <div class="definition-box" data-def="Two-Way Bandwidth">The flow of distinct products moving in both directions (East to West, West to East)</div>
-                            <div class="definition-box" data-def="Bactrian Camel">A two-humped camel adapted for extreme cold and heat, capable of sensing sandstorms</div>
-                            <div class="definition-box" data-def="Fergana Horse">"Heavenly Horses" prized by Han China for speed and military power</div>
-                            <div class="definition-box" data-def="Caravan">A group of traders traveling together for safety across long distances</div>
-                            <div class="definition-box" data-def="Middlemen">Traders who bought goods at one stop and sold them at the next, each adding to the price</div>
+                            <div id="vocabDefsContainer"></div>
                         </div>
                     </div>
+                    <div style="margin-top: 12px;">
+                        <button class="check-btn" onclick="checkVocabAnswers()">Check My Answers</button>
+                        <button class="reset-btn" onclick="resetVocabMatching()">Reset</button>
+                    </div>
+                    <div class="feedback-box" id="vocabFeedback"></div>
                 </div>
 
                 <!-- Activity 1.2: Fill-in-the-Blank -->
@@ -746,6 +816,11 @@
                         </select>
                         .
                     </div>
+                    <div style="margin-top: 12px;">
+                        <button class="check-btn" onclick="checkFillBlanksManual()">Check My Answers</button>
+                        <button class="reset-btn" onclick="resetFillBlanks()">Reset</button>
+                    </div>
+                    <div class="feedback-box" id="fillBlankFeedback"></div>
                 </div>
             </div>
         </div>
@@ -767,16 +842,9 @@
                         Activity 2.1: The Relay System Chain
                         <div class="activity-checkmark" id="check2-1">✓</div>
                     </div>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Arrange these steps in the correct order to show how the relay system worked.</p>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Arrange these steps in the correct order to show how the relay system worked. Drag each step into the numbered slots.</p>
                     <div class="relay-container">
-                        <div class="relay-items" id="relayItems">
-                            <div draggable="true" class="relay-item" data-relay-id="1">A Chinese silk producer sells silk to a local merchant</div>
-                            <div draggable="true" class="relay-item" data-relay-id="2">The merchant sells the silk to Uigur traders at the next oasis</div>
-                            <div draggable="true" class="relay-item" data-relay-id="3">Uigur traders carry it further west and sell to Kushan middlemen</div>
-                            <div draggable="true" class="relay-item" data-relay-id="4">Kushan merchants sell to Parthian traders</div>
-                            <div draggable="true" class="relay-item" data-relay-id="5">Parthian traders sell to Roman merchants at Mediterranean ports</div>
-                            <div draggable="true" class="relay-item" data-relay-id="6">A Roman citizen buys the silk at a price far higher than the original</div>
-                        </div>
+                        <div class="relay-items" id="relayItems"></div>
                         <div class="relay-drops" id="relayDrops">
                             <div class="relay-drop" data-relay-order="1"><span class="relay-number">1</span></div>
                             <div class="relay-drop" data-relay-order="2"><span class="relay-number">2</span></div>
@@ -786,6 +854,11 @@
                             <div class="relay-drop" data-relay-order="6"><span class="relay-number">6</span></div>
                         </div>
                     </div>
+                    <div style="margin-top: 12px;">
+                        <button class="check-btn" onclick="checkRelayAnswers()">Check My Answers</button>
+                        <button class="reset-btn" onclick="resetRelayChain()">Reset</button>
+                    </div>
+                    <div class="feedback-box" id="relayFeedback"></div>
                 </div>
 
                 <!-- Activity 2.2: Explain It -->
@@ -910,94 +983,224 @@
         // Track progress
         let totalActivities = 7;
         let completedActivities = 0;
+        let completedSet = new Set();
+
+        // ==== UTILITY: SHUFFLE ARRAY ====
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // ==== VOCAB DATA ====
+        const vocabData = [
+            { term: 'Great Arid Zone', def: 'A continuous belt of deserts, mountains, and grassy steppes across Afroeurasia' },
+            { term: 'Biological Hardware', def: 'The domestication and use of specific work animals to cross extreme terrain' },
+            { term: 'Relay System', def: 'A system of trade where goods change hands through various middlemen' },
+            { term: 'Two-Way Bandwidth', def: 'The flow of distinct products moving in both directions (East to West, West to East)' },
+            { term: 'Bactrian Camel', def: 'A two-humped camel adapted for extreme cold and heat, capable of sensing sandstorms' },
+            { term: 'Fergana Horse', def: '"Heavenly Horses" prized by Han China for speed and military power' },
+            { term: 'Caravan', def: 'A group of traders traveling together for safety across long distances' },
+            { term: 'Middlemen', def: 'Traders who bought goods at one stop and sold them at the next, each adding to the price' }
+        ];
 
         // ==== VOCAB MATCHING ====
         function initVocabMatching() {
-            const terms = document.querySelectorAll('.vocab-term');
-            const definitions = document.querySelectorAll('.definition-box');
+            const termsContainer = document.getElementById('vocabTermsContainer');
+            const defsContainer = document.getElementById('vocabDefsContainer');
 
-            terms.forEach(term => {
+            // Shuffle both terms and definitions independently
+            const shuffledTerms = shuffle(vocabData);
+            const shuffledDefs = shuffle(vocabData);
+
+            termsContainer.innerHTML = shuffledTerms.map(v =>
+                `<div draggable="true" class="vocab-term" data-vocab="${v.term}">${v.term}</div>`
+            ).join('');
+
+            defsContainer.innerHTML = shuffledDefs.map(v =>
+                `<div class="definition-box" data-def="${v.term}" data-original-text="${v.def}">${v.def}</div>`
+            ).join('');
+
+            // Attach drag events
+            termsContainer.querySelectorAll('.vocab-term').forEach(term => {
                 term.addEventListener('dragstart', (e) => {
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/plain', term.dataset.vocab);
                     term.classList.add('dragging');
                 });
-
-                term.addEventListener('dragend', () => {
-                    term.classList.remove('dragging');
-                });
+                term.addEventListener('dragend', () => term.classList.remove('dragging'));
             });
 
-            definitions.forEach(def => {
+            defsContainer.querySelectorAll('.definition-box').forEach(def => {
                 def.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
                 });
-
                 def.addEventListener('drop', (e) => {
                     e.preventDefault();
                     const vocab = e.dataTransfer.getData('text/plain');
-                    if (vocab === def.dataset.def) {
-                        def.textContent = vocab;
+                    // Allow drop on any definition (we'll check correctness later)
+                    if (!def.classList.contains('filled')) {
+                        def.dataset.droppedTerm = vocab;
+                        def.textContent = vocab + ' → ' + def.dataset.originalText;
                         def.classList.add('filled');
                         const term = document.querySelector(`.vocab-term[data-vocab="${vocab}"]`);
                         if (term) term.style.display = 'none';
-                        checkVocabMatching();
                     }
                 });
             });
+
+            // Clear feedback
+            const fb = document.getElementById('vocabFeedback');
+            fb.classList.remove('show', 'success', 'error');
         }
 
-        function checkVocabMatching() {
-            const definitions = document.querySelectorAll('.definition-box');
-            const allFilled = Array.from(definitions).every(def => def.classList.contains('filled'));
-            if (allFilled) {
-                markActivityComplete('check1-1');
-            }
-        }
+        function checkVocabAnswers() {
+            const defs = document.querySelectorAll('.definition-box');
+            let correct = 0;
+            let total = vocabData.length;
 
-        // ==== FILL-IN-THE-BLANK ====
-        function checkFillBlanks() {
-            const blanks = document.querySelectorAll('#activity1-2 .fill-blank-dropdown');
-            const answers = {
-                1: 'Great Arid Zone',
-                2: 'mountains',
-                3: 'Bactrian Camel',
-                4: 'sandstorms',
-                5: 'Fergana',
-                6: 'military power'
-            };
-
-            let allCorrect = true;
-            blanks.forEach(blank => {
-                const blankNum = blank.dataset.blank;
-                if (blank.value !== answers[blankNum]) {
-                    allCorrect = false;
+            defs.forEach(def => {
+                def.classList.remove('correct-match', 'incorrect-match');
+                if (def.classList.contains('filled')) {
+                    const dropped = def.dataset.droppedTerm;
+                    if (dropped === def.dataset.def) {
+                        def.style.borderColor = '#4caf50';
+                        def.style.backgroundColor = '#e8f5e9';
+                        correct++;
+                    } else {
+                        def.style.borderColor = '#f44336';
+                        def.style.backgroundColor = '#ffebee';
+                    }
                 }
             });
 
-            if (allCorrect && Array.from(blanks).every(b => b.value !== '')) {
-                markActivityComplete('check1-2');
+            const fb = document.getElementById('vocabFeedback');
+            fb.classList.add('show');
+            if (correct === total) {
+                fb.className = 'feedback-box show success';
+                fb.textContent = '✓ Perfect! All 8 matches are correct!';
+                markActivityComplete('check1-1');
+            } else {
+                fb.className = 'feedback-box show error';
+                fb.textContent = `You got ${correct} out of ${total} correct. Keep trying!`;
             }
         }
 
+        function resetVocabMatching() {
+            initVocabMatching();
+        }
+
+        // ==== FILL-IN-THE-BLANK ====
+        const fillBlankAnswers = {
+            1: 'Great Arid Zone',
+            2: 'mountains',
+            3: 'Bactrian Camel',
+            4: 'sandstorms',
+            5: 'Fergana',
+            6: 'military power'
+        };
+
+        function checkFillBlanks() {
+            // Auto-check on change (silent) — no visual feedback until manual check
+        }
+
+        function checkFillBlanksManual() {
+            const blanks = document.querySelectorAll('#activity1-2 .fill-blank-dropdown');
+            let correct = 0;
+            let total = Object.keys(fillBlankAnswers).length;
+            let allFilled = true;
+
+            blanks.forEach(blank => {
+                blank.classList.remove('correct', 'incorrect');
+                const blankNum = blank.dataset.blank;
+
+                if (blank.value === '') {
+                    allFilled = false;
+                    return;
+                }
+
+                if (blank.value === fillBlankAnswers[blankNum]) {
+                    blank.classList.add('correct');
+                    correct++;
+                } else {
+                    blank.classList.add('incorrect');
+                }
+            });
+
+            const fb = document.getElementById('fillBlankFeedback');
+            fb.classList.add('show');
+
+            if (!allFilled) {
+                fb.className = 'feedback-box show error';
+                fb.textContent = 'Please fill in all the blanks before checking.';
+                return;
+            }
+
+            if (correct === total) {
+                fb.className = 'feedback-box show success';
+                fb.textContent = '✓ Perfect! All 6 answers are correct!';
+                markActivityComplete('check1-2');
+            } else {
+                fb.className = 'feedback-box show error';
+                fb.textContent = `You got ${correct} out of ${total} correct. Green answers are right, red ones need fixing.`;
+            }
+        }
+
+        function resetFillBlanks() {
+            const blanks = document.querySelectorAll('#activity1-2 .fill-blank-dropdown');
+            blanks.forEach(blank => {
+                blank.value = '';
+                blank.classList.remove('correct', 'incorrect');
+            });
+            const fb = document.getElementById('fillBlankFeedback');
+            fb.classList.remove('show', 'success', 'error');
+        }
+
+        // ==== RELAY CHAIN DATA ====
+        const relayData = [
+            { id: '1', text: 'A Chinese silk producer sells silk to a local merchant' },
+            { id: '2', text: 'The merchant sells the silk to Uigur traders at the next oasis' },
+            { id: '3', text: 'Uigur traders carry it further west and sell to Kushan middlemen' },
+            { id: '4', text: 'Kushan merchants sell to Parthian traders' },
+            { id: '5', text: 'Parthian traders sell to Roman merchants at Mediterranean ports' },
+            { id: '6', text: 'A Roman citizen buys the silk at a price far higher than the original' }
+        ];
+
         // ==== RELAY CHAIN ====
         function initRelayChain() {
-            const items = document.querySelectorAll('.relay-item');
+            const itemsContainer = document.getElementById('relayItems');
             const drops = document.querySelectorAll('.relay-drop');
 
-            items.forEach(item => {
+            // Shuffle items
+            const shuffled = shuffle(relayData);
+
+            itemsContainer.innerHTML = shuffled.map(r =>
+                `<div draggable="true" class="relay-item" data-relay-id="${r.id}">${r.text}</div>`
+            ).join('');
+
+            // Reset drop zones
+            drops.forEach(drop => {
+                drop.classList.remove('filled', 'correct-drop', 'incorrect-drop');
+                // Remove any previously dropped items (keep just the number span)
+                const clones = drop.querySelectorAll('.relay-item');
+                clones.forEach(c => c.remove());
+            });
+
+            // Attach drag events to items
+            itemsContainer.querySelectorAll('.relay-item').forEach(item => {
                 item.addEventListener('dragstart', (e) => {
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/plain', item.dataset.relayId);
                     item.classList.add('dragging');
                 });
-
-                item.addEventListener('dragend', () => {
-                    item.classList.remove('dragging');
-                });
+                item.addEventListener('dragend', () => item.classList.remove('dragging'));
             });
 
+            // Allow drop on any slot (check correctness later)
             drops.forEach(drop => {
                 drop.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -1006,26 +1209,69 @@
 
                 drop.addEventListener('drop', (e) => {
                     e.preventDefault();
+                    if (drop.classList.contains('filled')) return; // already has an item
                     const relayId = e.dataTransfer.getData('text/plain');
-                    const order = drop.dataset.relayOrder;
-
-                    if (relayId === order) {
-                        const item = document.querySelector(`.relay-item[data-relay-id="${relayId}"]`);
-                        drop.appendChild(item.cloneNode(true));
+                    const item = document.querySelector(`.relay-item[data-relay-id="${relayId}"]`);
+                    if (item) {
+                        const clone = item.cloneNode(true);
+                        clone.setAttribute('draggable', 'false');
+                        clone.style.cursor = 'default';
+                        drop.appendChild(clone);
                         drop.classList.add('filled');
-                        document.querySelector(`.relay-item[data-relay-id="${relayId}"]`).style.display = 'none';
-                        checkRelayChain();
+                        drop.dataset.droppedId = relayId;
+                        item.style.display = 'none';
                     }
                 });
             });
+
+            // Clear feedback
+            const fb = document.getElementById('relayFeedback');
+            fb.classList.remove('show', 'success', 'error');
         }
 
-        function checkRelayChain() {
+        function checkRelayAnswers() {
             const drops = document.querySelectorAll('.relay-drop');
-            const allFilled = Array.from(drops).every(drop => drop.classList.contains('filled'));
-            if (allFilled) {
-                markActivityComplete('check2-1');
+            let correct = 0;
+            let total = relayData.length;
+            let allFilled = true;
+
+            drops.forEach(drop => {
+                drop.classList.remove('correct-drop', 'incorrect-drop');
+                if (!drop.classList.contains('filled')) {
+                    allFilled = false;
+                    return;
+                }
+                const droppedId = drop.dataset.droppedId;
+                const expectedOrder = drop.dataset.relayOrder;
+                if (droppedId === expectedOrder) {
+                    drop.classList.add('correct-drop');
+                    correct++;
+                } else {
+                    drop.classList.add('incorrect-drop');
+                }
+            });
+
+            const fb = document.getElementById('relayFeedback');
+            fb.classList.add('show');
+
+            if (!allFilled) {
+                fb.className = 'feedback-box show error';
+                fb.textContent = 'Please fill all 6 slots before checking.';
+                return;
             }
+
+            if (correct === total) {
+                fb.className = 'feedback-box show success';
+                fb.textContent = '✓ Perfect! The relay chain is in the correct order!';
+                markActivityComplete('check2-1');
+            } else {
+                fb.className = 'feedback-box show error';
+                fb.textContent = `You got ${correct} out of ${total} in the correct order. Green slots are right, red ones need moving. Try resetting!`;
+            }
+        }
+
+        function resetRelayChain() {
+            initRelayChain();
         }
 
         // ==== EXPLAIN IT ====
@@ -1108,9 +1354,10 @@
         // ==== PROGRESS TRACKING ====
         function markActivityComplete(checkId) {
             const checkmark = document.getElementById(checkId);
-            if (checkmark && !checkmark.classList.contains('complete')) {
+            if (checkmark && !completedSet.has(checkId)) {
                 checkmark.classList.add('complete');
-                completedActivities++;
+                completedSet.add(checkId);
+                completedActivities = completedSet.size;
                 updateProgressBar();
             }
         }
