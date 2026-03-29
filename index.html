@@ -998,19 +998,21 @@
         // ==== VOCAB DATA ====
         const vocabData = [
             { term: 'Great Arid Zone', def: 'A continuous belt of deserts, mountains, and grassy steppes across Afroeurasia' },
-            { term: 'Biological Hardware', def: 'The domestication and use of specific work animals to cross extreme terrain' },
             { term: 'Relay System', def: 'A system of trade where goods change hands through various middlemen' },
-            { term: 'Two-Way Bandwidth', def: 'The flow of distinct products moving in both directions (East to West, West to East)' },
+            { term: 'Two-Way Trade', def: 'The flow of distinct products moving in both directions (East to West, West to East)' },
             { term: 'Bactrian Camel', def: 'A two-humped camel adapted for extreme cold and heat, capable of sensing sandstorms' },
             { term: 'Fergana Horse', def: '"Heavenly Horses" prized by Han China for speed and military power' },
             { term: 'Caravan', def: 'A group of traders traveling together for safety across long distances' },
             { term: 'Middlemen', def: 'Traders who bought goods at one stop and sold them at the next, each adding to the price' }
         ];
 
+        let vocabMatchCount = 0;
+
         // ==== VOCAB MATCHING ====
         function initVocabMatching() {
             const termsContainer = document.getElementById('vocabTermsContainer');
             const defsContainer = document.getElementById('vocabDefsContainer');
+            vocabMatchCount = 0;
 
             // Shuffle both terms and definitions independently
             const shuffledTerms = shuffle(vocabData);
@@ -1021,10 +1023,10 @@
             ).join('');
 
             defsContainer.innerHTML = shuffledDefs.map(v =>
-                `<div class="definition-box" data-def="${v.term}" data-original-text="${v.def}">${v.def}</div>`
+                `<div class="definition-box" data-def="${v.term}">${v.def}</div>`
             ).join('');
 
-            // Attach drag events
+            // Attach drag events to terms
             termsContainer.querySelectorAll('.vocab-term').forEach(term => {
                 term.addEventListener('dragstart', (e) => {
                     e.dataTransfer.effectAllowed = 'move';
@@ -1034,6 +1036,7 @@
                 term.addEventListener('dragend', () => term.classList.remove('dragging'));
             });
 
+            // Attach drop events to definitions
             defsContainer.querySelectorAll('.definition-box').forEach(def => {
                 def.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -1041,52 +1044,60 @@
                 });
                 def.addEventListener('drop', (e) => {
                     e.preventDefault();
+                    if (def.classList.contains('matched')) return; // already matched
                     const vocab = e.dataTransfer.getData('text/plain');
-                    // Allow drop on any definition (we'll check correctness later)
-                    if (!def.classList.contains('filled')) {
-                        def.dataset.droppedTerm = vocab;
-                        def.textContent = vocab + ' → ' + def.dataset.originalText;
-                        def.classList.add('filled');
-                        const term = document.querySelector(`.vocab-term[data-vocab="${vocab}"]`);
+                    const term = document.querySelector(`.vocab-term[data-vocab="${vocab}"]`);
+
+                    if (vocab === def.dataset.def) {
+                        // CORRECT — lock it in green
+                        def.classList.add('matched');
+                        def.style.borderColor = '#4caf50';
+                        def.style.backgroundColor = '#e8f5e9';
+                        def.innerHTML = '<strong>' + vocab + '</strong> — ' + def.textContent;
                         if (term) term.style.display = 'none';
+                        vocabMatchCount++;
+
+                        if (vocabMatchCount === vocabData.length) {
+                            const fb = document.getElementById('vocabFeedback');
+                            fb.className = 'feedback-box show success';
+                            fb.textContent = '✓ Perfect! All ' + vocabData.length + ' matches are correct!';
+                            markActivityComplete('check1-1');
+                        }
+                    } else {
+                        // WRONG — flash red and bounce back
+                        def.style.borderColor = '#f44336';
+                        def.style.backgroundColor = '#ffebee';
+                        if (term) {
+                            term.style.opacity = '0.5';
+                        }
+                        setTimeout(() => {
+                            def.style.borderColor = '';
+                            def.style.backgroundColor = '';
+                            if (term) {
+                                term.style.opacity = '1';
+                            }
+                        }, 600);
                     }
                 });
             });
 
             // Clear feedback
             const fb = document.getElementById('vocabFeedback');
-            fb.classList.remove('show', 'success', 'error');
+            fb.className = 'feedback-box';
+            fb.textContent = '';
         }
 
         function checkVocabAnswers() {
-            const defs = document.querySelectorAll('.definition-box');
-            let correct = 0;
-            let total = vocabData.length;
-
-            defs.forEach(def => {
-                def.classList.remove('correct-match', 'incorrect-match');
-                if (def.classList.contains('filled')) {
-                    const dropped = def.dataset.droppedTerm;
-                    if (dropped === def.dataset.def) {
-                        def.style.borderColor = '#4caf50';
-                        def.style.backgroundColor = '#e8f5e9';
-                        correct++;
-                    } else {
-                        def.style.borderColor = '#f44336';
-                        def.style.backgroundColor = '#ffebee';
-                    }
-                }
-            });
-
+            // With instant feedback, this just shows current status
             const fb = document.getElementById('vocabFeedback');
             fb.classList.add('show');
-            if (correct === total) {
+            if (vocabMatchCount === vocabData.length) {
                 fb.className = 'feedback-box show success';
-                fb.textContent = '✓ Perfect! All 8 matches are correct!';
+                fb.textContent = '✓ Perfect! All ' + vocabData.length + ' matches are correct!';
                 markActivityComplete('check1-1');
             } else {
                 fb.className = 'feedback-box show error';
-                fb.textContent = `You got ${correct} out of ${total} correct. Keep trying!`;
+                fb.textContent = vocabMatchCount + ' out of ' + vocabData.length + ' matched so far. Keep dragging terms to definitions!';
             }
         }
 
