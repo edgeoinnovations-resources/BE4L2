@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Era 4 — Lesson 2: The Hardware (The Mechanics of the Silk Road)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f0e1;
+            color: #4a3728;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background-color: #1a3a5c;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header-controls input,
+        .header-controls select,
+        .header-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+        }
+
+        .header-controls input[type="text"],
+        .header-controls select {
+            background-color: white;
+            color: #4a3728;
+        }
+
+        .header-controls button {
+            background-color: #c8a951;
+            color: #1a3a5c;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .header-controls button:hover {
+            background-color: #d4b968;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a3a5c;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c8a951, #cd7f32);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Level Sections */
+        .level-section {
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .level-header {
+            padding: 20px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: background-color 0.3s;
+        }
+
+        .level-header:hover {
+            background-color: #f9f7f2;
+        }
+
+        .level-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+        }
+
+        .level-1 .level-number {
+            background-color: #cd7f32;
+        }
+
+        .level-2 .level-number {
+            background-color: #8a9ea7;
+        }
+
+        .level-3 .level-number {
+            background-color: #c8a951;
+        }
+
+        .level-4 .level-number {
+            background-color: #1a3a5c;
+        }
+
+        .level-title {
+            flex: 1;
+        }
+
+        .level-title h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .level-title p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .expand-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .level-section.collapsed .expand-icon {
+            transform: rotate(-90deg);
+        }
+
+        .level-content {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .level-section.expanded .level-content {
+            display: block;
+        }
+
+        /* Activity */
+        .activity {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #fafaf8;
+            border-left: 4px solid #c8a951;
+            border-radius: 4px;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+
+        .activity-checkmark {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            margin-left: auto;
+            font-size: 14px;
+        }
+
+        .activity-checkmark.complete {
+            background-color: #4caf50;
+        }
+
+        /* Vocab Matching */
+        .vocab-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .vocab-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .vocab-column h4 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #1a3a5c;
+            margin-bottom: 5px;
+        }
+
+        .vocab-term {
+            background-color: #e8e8e8;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .vocab-term:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .vocab-term.dragging {
+            opacity: 0.5;
+        }
+
+        .definition-box {
+            background-color: #f0f0f0;
+            border: 2px dashed #c8a951;
+            padding: 12px;
+            border-radius: 4px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .definition-box.filled {
+            border-color: #4caf50;
+            background-color: #f1f8f4;
+        }
+
+        .definition-box.filled::after {
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Fill-in-the-Blank */
+        .fill-blank-text {
+            font-size: 15px;
+            line-height: 1.8;
+            margin-top: 15px;
+        }
+
+        .fill-blank-dropdown {
+            background-color: #fff8e1;
+            border: 2px solid #c8a951;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Relay Chain */
+        .relay-container {
+            margin-top: 15px;
+        }
+
+        .relay-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .relay-item {
+            background-color: #e8e8e8;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .relay-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .relay-item.dragging {
+            opacity: 0.5;
+        }
+
+        .relay-drops {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .relay-drop {
+            background-color: #f0f0f0;
+            border: 2px dashed #c8a951;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .relay-drop.filled {
+            border-color: #4caf50;
+            background-color: #f1f8f4;
+        }
+
+        .relay-drop.filled::after {
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .relay-number {
+            background-color: #c8a951;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Text Areas */
+        .text-area-container {
+            position: relative;
+            margin-top: 15px;
+        }
+
+        .text-area-container textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #c8a951;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .word-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .prompt-box {
+            background-color: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border-left: 4px solid #8a9ea7;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        /* CER Activity */
+        .cer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .cer-section {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #c8a951;
+        }
+
+        .cer-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1a3a5c;
+        }
+
+        .cer-section textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 13px;
+            min-height: 80px;
+        }
+
+        /* Synectics Cards */
+        .synectics-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .synectics-card {
+            background-color: #e8e8e8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            user-select: none;
+        }
+
+        .synectics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .synectics-card.selected {
+            border-color: #4caf50;
+            background-color: #f1f8f4;
+        }
+
+        .synectics-emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .synectics-label {
+            font-weight: 600;
+            font-size: 13px;
+            word-break: break-word;
+        }
+
+        .synectics-response {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fafaf8;
+            border-left: 4px solid #8a9ea7;
+            border-radius: 4px;
+        }
+
+        .synectics-response h5 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a3a5c;
+        }
+
+        .synectics-response textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 13px;
+            min-height: 70px;
+        }
+
+        /* Submission Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            font-family: 'Merriweather', serif;
+            color: #1a3a5c;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .modal-button {
+            background-color: #c8a951;
+            color: #1a3a5c;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .modal-button:hover {
+            background-color: #d4b968;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-controls input,
+            .header-controls select,
+            .header-controls button {
+                width: 100%;
+            }
+
+            .vocab-container {
+                grid-template-columns: 1fr;
+            }
+
+            .level-section {
+                margin-bottom: 15px;
+            }
+
+            .synectics-cards {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Big Era 4 — Lesson 2: The Hardware</h1>
+        <p style="font-style: italic; margin-bottom: 20px;">The Mechanics of the Silk Road</p>
+        <div class="header-controls">
+            <input type="text" id="studentName" placeholder="Student Name">
+            <select id="teacherSelect">
+                <option value="">Select Your Teacher</option>
+                <option value="Ms. Singh">Ms. Singh</option>
+                <option value="Mr. Ghassan">Mr. Ghassan</option>
+                <option value="Ms. Dourley">Ms. Dourley</option>
+                <option value="Mr. Strootman">Mr. Strootman</option>
+            </select>
+            <input type="text" id="sectionInput" placeholder="Section/Period">
+            <button id="submitBtn">Send My Work</button>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="progress-label">Lesson Progress</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0/7</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- LEVEL 1: KNOWLEDGE RECALL -->
+        <div class="level-section level-1 expanded">
+            <div class="level-header" onclick="toggleLevel(this)">
+                <div class="level-number">1</div>
+                <div class="level-title">
+                    <h2>Knowledge Recall</h2>
+                    <p>Remember and recognize key vocabulary and facts — ~4 min</p>
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="level-content">
+                <!-- Activity 1.1: Vocab Matching -->
+                <div class="activity" id="activity1-1">
+                    <div class="activity-title">
+                        Activity 1.1: Vocabulary Matching
+                        <div class="activity-checkmark" id="check1-1">✓</div>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Drag each term to match it with its correct definition.</p>
+                    <div class="vocab-container">
+                        <div class="vocab-column">
+                            <h4>Terms</h4>
+                            <div draggable="true" class="vocab-term" data-vocab="Great Arid Zone">Great Arid Zone</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Biological Hardware">Biological Hardware</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Relay System">Relay System</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Two-Way Bandwidth">Two-Way Bandwidth</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Bactrian Camel">Bactrian Camel</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Fergana Horse">Fergana Horse</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Caravan">Caravan</div>
+                            <div draggable="true" class="vocab-term" data-vocab="Middlemen">Middlemen</div>
+                        </div>
+                        <div class="vocab-column">
+                            <h4>Definitions</h4>
+                            <div class="definition-box" data-def="Great Arid Zone">A continuous belt of deserts, mountains, and grassy steppes across Afroeurasia</div>
+                            <div class="definition-box" data-def="Biological Hardware">The domestication and use of specific work animals to cross extreme terrain</div>
+                            <div class="definition-box" data-def="Relay System">A system of trade where goods change hands through various middlemen</div>
+                            <div class="definition-box" data-def="Two-Way Bandwidth">The flow of distinct products moving in both directions (East to West, West to East)</div>
+                            <div class="definition-box" data-def="Bactrian Camel">A two-humped camel adapted for extreme cold and heat, capable of sensing sandstorms</div>
+                            <div class="definition-box" data-def="Fergana Horse">"Heavenly Horses" prized by Han China for speed and military power</div>
+                            <div class="definition-box" data-def="Caravan">A group of traders traveling together for safety across long distances</div>
+                            <div class="definition-box" data-def="Middlemen">Traders who bought goods at one stop and sold them at the next, each adding to the price</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 1.2: Fill-in-the-Blank -->
+                <div class="activity" id="activity1-2">
+                    <div class="activity-title">
+                        Activity 1.2: Silk Road Geography
+                        <div class="activity-checkmark" id="check1-2">✓</div>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Complete the passage using the dropdown menus.</p>
+                    <div class="fill-blank-text">
+                        The Silk Road crossed a harsh region known as the
+                        <select class="fill-blank-dropdown" data-blank="1" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="Great Arid Zone">Great Arid Zone</option>
+                            <option value="Fertile Crescent">Fertile Crescent</option>
+                            <option value="Mediterranean Coast">Mediterranean Coast</option>
+                        </select>
+                        , which included deserts,
+                        <select class="fill-blank-dropdown" data-blank="2" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="mountains">mountains</option>
+                            <option value="rivers">rivers</option>
+                            <option value="islands">islands</option>
+                        </select>
+                        , and grassy steppes. The
+                        <select class="fill-blank-dropdown" data-blank="3" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="Bactrian Camel">Bactrian Camel</option>
+                            <option value="Arabian Horse">Arabian Horse</option>
+                            <option value="Yak">Yak</option>
+                        </select>
+                        was specially adapted to survive the extreme conditions and could even sense deadly
+                        <select class="fill-blank-dropdown" data-blank="4" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="sandstorms">sandstorms</option>
+                            <option value="earthquakes">earthquakes</option>
+                            <option value="floods">floods</option>
+                        </select>
+                        . Han China highly prized the
+                        <select class="fill-blank-dropdown" data-blank="5" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="Fergana">Fergana</option>
+                            <option value="Arabian">Arabian</option>
+                            <option value="Mongol">Mongol</option>
+                        </select>
+                        horse for its speed and
+                        <select class="fill-blank-dropdown" data-blank="6" onchange="checkFillBlanks()">
+                            <option value="">— Select —</option>
+                            <option value="military power">military power</option>
+                            <option value="beauty">beauty</option>
+                            <option value="endurance">endurance</option>
+                        </select>
+                        .
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 2: EXPLAIN & APPLY -->
+        <div class="level-section level-2 collapsed">
+            <div class="level-header" onclick="toggleLevel(this)">
+                <div class="level-number">2</div>
+                <div class="level-title">
+                    <h2>Explain & Apply</h2>
+                    <p>Understand how and why things happen — ~6 min</p>
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="level-content">
+                <!-- Activity 2.1: Relay Chain -->
+                <div class="activity" id="activity2-1">
+                    <div class="activity-title">
+                        Activity 2.1: The Relay System Chain
+                        <div class="activity-checkmark" id="check2-1">✓</div>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Arrange these steps in the correct order to show how the relay system worked.</p>
+                    <div class="relay-container">
+                        <div class="relay-items" id="relayItems">
+                            <div draggable="true" class="relay-item" data-relay-id="1">A Chinese silk producer sells silk to a local merchant</div>
+                            <div draggable="true" class="relay-item" data-relay-id="2">The merchant sells the silk to Uigur traders at the next oasis</div>
+                            <div draggable="true" class="relay-item" data-relay-id="3">Uigur traders carry it further west and sell to Kushan middlemen</div>
+                            <div draggable="true" class="relay-item" data-relay-id="4">Kushan merchants sell to Parthian traders</div>
+                            <div draggable="true" class="relay-item" data-relay-id="5">Parthian traders sell to Roman merchants at Mediterranean ports</div>
+                            <div draggable="true" class="relay-item" data-relay-id="6">A Roman citizen buys the silk at a price far higher than the original</div>
+                        </div>
+                        <div class="relay-drops" id="relayDrops">
+                            <div class="relay-drop" data-relay-order="1"><span class="relay-number">1</span></div>
+                            <div class="relay-drop" data-relay-order="2"><span class="relay-number">2</span></div>
+                            <div class="relay-drop" data-relay-order="3"><span class="relay-number">3</span></div>
+                            <div class="relay-drop" data-relay-order="4"><span class="relay-number">4</span></div>
+                            <div class="relay-drop" data-relay-order="5"><span class="relay-number">5</span></div>
+                            <div class="relay-drop" data-relay-order="6"><span class="relay-number">6</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 2.2: Explain It -->
+                <div class="activity" id="activity2-2">
+                    <div class="activity-title">
+                        Activity 2.2: Explain It (2 Prompts)
+                        <div class="activity-checkmark" id="check2-2">✓</div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <div class="prompt-box">Prompt 1: Why was "biological hardware" so important for Silk Road trade? Explain how at least two specific animals helped traders cross the Great Arid Zone.</div>
+                        <div class="text-area-container">
+                            <textarea id="explain1" placeholder="Your answer..." onchange="updateWordCount(this)" oninput="updateWordCount(this)"></textarea>
+                            <div class="word-count"><span id="count1">0</span> words</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <div class="prompt-box">Prompt 2: Why did the price of silk increase so much between China and Rome? Use the relay system to explain.</div>
+                        <div class="text-area-container">
+                            <textarea id="explain2" placeholder="Your answer..." onchange="updateWordCount(this)" oninput="updateWordCount(this)"></textarea>
+                            <div class="word-count"><span id="count2">0</span> words</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 3: ANALYZE WITH EVIDENCE -->
+        <div class="level-section level-3 collapsed">
+            <div class="level-header" onclick="toggleLevel(this)">
+                <div class="level-number">3</div>
+                <div class="level-title">
+                    <h2>Analyze with Evidence</h2>
+                    <p>Examine parts and support conclusions with evidence — ~6 min</p>
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="level-content">
+                <!-- Activity 3.1: CER -->
+                <div class="activity" id="activity3-1">
+                    <div class="activity-title">
+                        Activity 3.1: Claim-Evidence-Reasoning (CER)
+                        <div class="activity-checkmark" id="check3-1">✓</div>
+                    </div>
+                    <div class="prompt-box" style="margin-top: 15px;">Some historians argue that the Silk Road was more like a chain of local trades than a true long-distance route. Using evidence from the lesson about the relay system, middlemen, and the Great Arid Zone, make a claim about whether the Silk Road should be considered a "long-distance trade route" or a "chain of short-distance trades." Support your claim with specific evidence and explain your reasoning.</div>
+
+                    <div class="cer-container">
+                        <div class="cer-section">
+                            <h4>Claim:</h4>
+                            <textarea id="cerClaim" placeholder="Make a clear statement..."></textarea>
+                        </div>
+                        <div class="cer-section">
+                            <h4>Evidence:</h4>
+                            <textarea id="cerEvidence" placeholder="Provide specific examples from the lesson..."></textarea>
+                        </div>
+                        <div class="cer-section">
+                            <h4>Reasoning:</h4>
+                            <textarea id="cerReasoning" placeholder="Explain how your evidence supports your claim..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL 4: CONNECT & CREATE -->
+        <div class="level-section level-4 collapsed">
+            <div class="level-header" onclick="toggleLevel(this)">
+                <div class="level-number">4</div>
+                <div class="level-title">
+                    <h2>Connect & Create</h2>
+                    <p>Make connections and generate new ideas — ~4 min</p>
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="level-content">
+                <!-- Activity 4.1: Synectics -->
+                <div class="activity" id="activity4-1">
+                    <div class="activity-title">
+                        Activity 4.1: Synectics — "The Silk Road Is Like a..."
+                        <div class="activity-checkmark" id="check4-1">✓</div>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Choose at least 2 modern objects and explain how they're similar to the Silk Road. Click the cards to select them.</p>
+
+                    <div class="synectics-cards" id="synecticsCards">
+                        <div class="synectics-card" data-synectics="Amazon Delivery Network" onclick="selectSynecticsCard(this)">
+                            <div class="synectics-emoji">📦</div>
+                            <div class="synectics-label">Amazon Delivery Network</div>
+                        </div>
+                        <div class="synectics-card" data-synectics="The Internet" onclick="selectSynecticsCard(this)">
+                            <div class="synectics-emoji">🌐</div>
+                            <div class="synectics-label">The Internet</div>
+                        </div>
+                        <div class="synectics-card" data-synectics="A Highway System" onclick="selectSynecticsCard(this)">
+                            <div class="synectics-emoji">🏗️</div>
+                            <div class="synectics-label">A Highway System</div>
+                        </div>
+                        <div class="synectics-card" data-synectics="A Relay Race" onclick="selectSynecticsCard(this)">
+                            <div class="synectics-emoji">🐪</div>
+                            <div class="synectics-label">A Relay Race</div>
+                        </div>
+                    </div>
+
+                    <div id="synecticsResponses"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Work Submitted!</h2>
+            <p id="modalMessage">Thank you for completing this lesson. Your work has been sent to your teacher.</p>
+            <button class="modal-button" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_APPS_SCRIPT_URL = 'GOOGLE_APPS_SCRIPT_URL';
+
+        // Track progress
+        let totalActivities = 7;
+        let completedActivities = 0;
+
+        // ==== VOCAB MATCHING ====
+        function initVocabMatching() {
+            const terms = document.querySelectorAll('.vocab-term');
+            const definitions = document.querySelectorAll('.definition-box');
+
+            terms.forEach(term => {
+                term.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', term.dataset.vocab);
+                    term.classList.add('dragging');
+                });
+
+                term.addEventListener('dragend', () => {
+                    term.classList.remove('dragging');
+                });
+            });
+
+            definitions.forEach(def => {
+                def.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                def.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const vocab = e.dataTransfer.getData('text/plain');
+                    if (vocab === def.dataset.def) {
+                        def.textContent = vocab;
+                        def.classList.add('filled');
+                        const term = document.querySelector(`.vocab-term[data-vocab="${vocab}"]`);
+                        if (term) term.style.display = 'none';
+                        checkVocabMatching();
+                    }
+                });
+            });
+        }
+
+        function checkVocabMatching() {
+            const definitions = document.querySelectorAll('.definition-box');
+            const allFilled = Array.from(definitions).every(def => def.classList.contains('filled'));
+            if (allFilled) {
+                markActivityComplete('check1-1');
+            }
+        }
+
+        // ==== FILL-IN-THE-BLANK ====
+        function checkFillBlanks() {
+            const blanks = document.querySelectorAll('#activity1-2 .fill-blank-dropdown');
+            const answers = {
+                1: 'Great Arid Zone',
+                2: 'mountains',
+                3: 'Bactrian Camel',
+                4: 'sandstorms',
+                5: 'Fergana',
+                6: 'military power'
+            };
+
+            let allCorrect = true;
+            blanks.forEach(blank => {
+                const blankNum = blank.dataset.blank;
+                if (blank.value !== answers[blankNum]) {
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect && Array.from(blanks).every(b => b.value !== '')) {
+                markActivityComplete('check1-2');
+            }
+        }
+
+        // ==== RELAY CHAIN ====
+        function initRelayChain() {
+            const items = document.querySelectorAll('.relay-item');
+            const drops = document.querySelectorAll('.relay-drop');
+
+            items.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', item.dataset.relayId);
+                    item.classList.add('dragging');
+                });
+
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                });
+            });
+
+            drops.forEach(drop => {
+                drop.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                drop.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const relayId = e.dataTransfer.getData('text/plain');
+                    const order = drop.dataset.relayOrder;
+
+                    if (relayId === order) {
+                        const item = document.querySelector(`.relay-item[data-relay-id="${relayId}"]`);
+                        drop.appendChild(item.cloneNode(true));
+                        drop.classList.add('filled');
+                        document.querySelector(`.relay-item[data-relay-id="${relayId}"]`).style.display = 'none';
+                        checkRelayChain();
+                    }
+                });
+            });
+        }
+
+        function checkRelayChain() {
+            const drops = document.querySelectorAll('.relay-drop');
+            const allFilled = Array.from(drops).every(drop => drop.classList.contains('filled'));
+            if (allFilled) {
+                markActivityComplete('check2-1');
+            }
+        }
+
+        // ==== EXPLAIN IT ====
+        function checkExplainIt() {
+            const explain1 = document.getElementById('explain1').value.trim();
+            const explain2 = document.getElementById('explain2').value.trim();
+
+            if (explain1.length > 20 && explain2.length > 20) {
+                markActivityComplete('check2-2');
+            }
+        }
+
+        function updateWordCount(textarea) {
+            const id = textarea.id;
+            const text = textarea.value.trim();
+            const words = text.length > 0 ? text.split(/\s+/).length : 0;
+            document.getElementById(`count${id === 'explain1' ? '1' : '2'}`).textContent = words;
+            checkExplainIt();
+        }
+
+        // ==== CER TRACKING ====
+        function checkCER() {
+            const claim = document.getElementById('cerClaim').value.trim();
+            const evidence = document.getElementById('cerEvidence').value.trim();
+            const reasoning = document.getElementById('cerReasoning').value.trim();
+
+            if (claim.length > 15 && evidence.length > 15 && reasoning.length > 15) {
+                markActivityComplete('check3-1');
+            }
+        }
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id.startsWith('cer')) {
+                checkCER();
+            }
+        });
+
+        // ==== SYNECTICS ====
+        function selectSynecticsCard(card) {
+            card.classList.toggle('selected');
+            renderSynecticsResponses();
+            checkSynectics();
+        }
+
+        function renderSynecticsResponses() {
+            const selected = document.querySelectorAll('.synectics-card.selected');
+            const container = document.getElementById('synecticsResponses');
+            container.innerHTML = '';
+
+            selected.forEach(card => {
+                const label = card.dataset.synectics;
+                const html = `
+                    <div class="synectics-response">
+                        <h5>The Silk Road is like ${label} because...</h5>
+                        <textarea placeholder="Your explanation..." data-synectics-text="${label}" onchange="checkSynectics()" oninput="checkSynectics()"></textarea>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function checkSynectics() {
+            const selected = document.querySelectorAll('.synectics-card.selected');
+            const textareas = document.querySelectorAll('[data-synectics-text]');
+
+            if (selected.length >= 2) {
+                let allFilled = true;
+                textareas.forEach(ta => {
+                    if (ta.value.trim().length < 15) {
+                        allFilled = false;
+                    }
+                });
+
+                if (allFilled) {
+                    markActivityComplete('check4-1');
+                }
+            }
+        }
+
+        // ==== PROGRESS TRACKING ====
+        function markActivityComplete(checkId) {
+            const checkmark = document.getElementById(checkId);
+            if (checkmark && !checkmark.classList.contains('complete')) {
+                checkmark.classList.add('complete');
+                completedActivities++;
+                updateProgressBar();
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = document.getElementById('progressFill');
+            const percent = (completedActivities / totalActivities) * 100;
+            progress.style.width = percent + '%';
+            progress.textContent = `${completedActivities}/${totalActivities}`;
+        }
+
+        // ==== LEVEL TOGGLE ====
+        function toggleLevel(header) {
+            const section = header.parentElement;
+            section.classList.toggle('expanded');
+            section.classList.toggle('collapsed');
+        }
+
+        // ==== SUBMISSION ====
+        function collectAllResponses() {
+            // Level 1
+            const vocabAnswers = {};
+            document.querySelectorAll('.definition-box.filled').forEach(def => {
+                vocabAnswers[def.dataset.def] = def.textContent.trim();
+            });
+
+            const fillBlanks = {};
+            document.querySelectorAll('#activity1-2 .fill-blank-dropdown').forEach(dropdown => {
+                fillBlanks[dropdown.dataset.blank] = dropdown.value;
+            });
+
+            // Level 2
+            const relayOrder = [];
+            document.querySelectorAll('.relay-drop.filled').forEach(drop => {
+                relayOrder.push({
+                    order: drop.dataset.relayOrder,
+                    content: drop.textContent.replace(/^\d+/, '').trim()
+                });
+            });
+
+            const explain1 = document.getElementById('explain1').value;
+            const explain2 = document.getElementById('explain2').value;
+
+            // Level 3
+            const claim = document.getElementById('cerClaim').value;
+            const evidence = document.getElementById('cerEvidence').value;
+            const reasoning = document.getElementById('cerReasoning').value;
+
+            // Level 4
+            const synecticsResponses = {};
+            document.querySelectorAll('[data-synectics-text]').forEach(ta => {
+                synecticsResponses[ta.dataset.synecticsText] = ta.value;
+            });
+
+            return {
+                studentName: document.getElementById('studentName').value,
+                teacher: document.getElementById('teacherSelect').value,
+                section: document.getElementById('sectionInput').value,
+                lessonName: 'Big Era 4 Lesson 2',
+                level1: {
+                    vocabMatching: vocabAnswers,
+                    fillInBlanks: fillBlanks
+                },
+                level2: {
+                    relayChain: relayOrder,
+                    explainIt: {
+                        prompt1: explain1,
+                        prompt2: explain2
+                    }
+                },
+                level3: {
+                    cer: {
+                        claim: claim,
+                        evidence: evidence,
+                        reasoning: reasoning
+                    }
+                },
+                level4: {
+                    synectics: synecticsResponses
+                }
+            };
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const data = collectAllResponses();
+
+            if (!data.studentName || !data.teacher || !data.section) {
+                alert('Please fill in your name, teacher, and section before submitting.');
+                return;
+            }
+
+            fetch(GOOGLE_APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                mode: 'no-cors'
+            }).then(() => {
+                showModal();
+            }).catch(error => {
+                alert('Error submitting work. Please try again.');
+                console.error(error);
+            });
+        });
+
+        function showModal() {
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        // ==== INITIALIZATION ====
+        window.addEventListener('DOMContentLoaded', () => {
+            initVocabMatching();
+            initRelayChain();
+        });
+    </script>
+</body>
+</html>
