@@ -1,379 +1,495 @@
-// Teacher email mapping
+// ============================================
+// Google Apps Script — Big Era 4 Email Backend
+// Handles BOTH Lesson 1 and Lesson 2 submissions
+// ============================================
+//
+// SETUP INSTRUCTIONS (see SETUP_INSTRUCTIONS.md for step-by-step):
+// 1. Go to https://script.google.com while logged into paul.strootman@gmail.com
+// 2. Create a new project (or open the existing one)
+// 3. Paste this entire code into the editor
+// 4. Click Deploy > New deployment > Web app
+// 5. Set "Execute as: Me" and "Who has access: Anyone"
+// 6. Copy the deployment URL
+// 7. Replace GOOGLE_APPS_SCRIPT_URL in BOTH index.html files with that URL
+//
+
+// Teacher email mapping — students never see these addresses
 var TEACHER_EMAILS = {
   "Ms. Singh": "psingh@asdubai.org",
   "Mr. Ghassan": "ggammoh@asdubai.org",
+  "Mr. Ghammoh": "ggammoh@asdubai.org",
   "Ms. Dourley": "cdourley@asdubai.org",
   "Mr. Strootman": "pstrootman@asdubai.org"
 };
 
-// Dubai timezone
-var DUBAI_TIMEZONE = "Asia/Dubai";
-
-/**
- * Handles GET requests - returns status OK
- */
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({
-    status: "OK",
-    message: "Big Era 4 Lesson 2 Script is running"
-  })).setMimeType(ContentService.MimeType.JSON);
-}
-
-/**
- * Handles POST requests with student submission data
- */
 function doPost(e) {
   try {
-    // Parse the JSON payload
     var data = JSON.parse(e.postData.contents);
 
-    // Extract student and submission information
     var studentName = data.studentName || "Unknown Student";
-    var teacherName = data.teacherName || "Unknown Teacher";
+    // Lesson 1 sends "teacherName", Lesson 2 sends "teacher"
+    var teacherName = data.teacherName || data.teacher || "Unknown Teacher";
     var section = data.section || "Unknown Section";
-    var lessonName = data.lessonName || "Big Era 4 — Lesson 2: The Hardware (The Mechanics of the Silk Road)";
-    var responses = data.responses || {};
+    var lessonName = data.lessonName || "Big Era 4";
+
+    // Lesson 1 nests inside "responses", Lesson 2 puts levels at top level
+    var responses = data.responses || {
+      level1: data.level1,
+      level2: data.level2,
+      level3: data.level3,
+      level4: data.level4
+    };
 
     // Get teacher email
     var teacherEmail = TEACHER_EMAILS[teacherName];
     if (!teacherEmail) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "ERROR",
-        message: "Teacher email not found for: " + teacherName
-      })).setMimeType(ContentService.MimeType.JSON);
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: "error", message: "Unknown teacher: " + teacherName }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Build email subject and content
-    var subject = section + " — " + studentName + " — " + teacherName + " — Big Era 4 Lesson 2";
-    var htmlBody = buildHtmlEmail(studentName, teacherName, section, lessonName, responses);
-    var plainTextBody = buildPlainTextEmail(studentName, teacherName, section, lessonName, responses);
+    // Build email subject: Section — Student Name — Teacher Name — Lesson
+    var subject = section + " — " + studentName + " — " + teacherName + " — " + lessonName;
 
-    // Send email
-    MailApp.sendEmail({
-      to: teacherEmail,
-      subject: subject,
+    // Detect which lesson and build the appropriate email
+    var htmlBody, plainBody;
+    if (lessonName.indexOf("Lesson 2") !== -1) {
+      htmlBody = buildLesson2HTML(studentName, teacherName, section, lessonName, responses);
+    } else {
+      htmlBody = buildLesson1HTML(studentName, teacherName, section, lessonName, responses);
+    }
+    plainBody = buildEmailPlain(studentName, teacherName, section, lessonName, responses);
+
+    // Send email to teacher's school address
+    GmailApp.sendEmail(teacherEmail, subject, plainBody, {
       htmlBody: htmlBody,
-      textBody: plainTextBody
+      name: "Big Era 4 - Student Submission",
+      replyTo: "noreply@example.com"
     });
 
-    // Return success response
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "SUCCESS",
-      message: "Email sent successfully to " + teacherEmail,
-      studentName: studentName,
-      teacherName: teacherName,
-      section: section
-    })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "success", message: "Work submitted successfully!" }))
+      .setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "ERROR",
-      message: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-/**
- * Builds the HTML email body
- */
-function buildHtmlEmail(studentName, teacherName, section, lessonName, responses) {
-  var timestamp = Utilities.formatDate(new Date(), DUBAI_TIMEZONE, "MMMM dd, yyyy 'at' hh:mm a z");
-
-  var html = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">';
-
-  // Header
-  html += '<div style="background-color: #f5f0e1; padding: 20px; border-bottom: 3px solid #c8a951; margin-bottom: 20px;">';
-  html += '<h1 style="color: #1a3a5c; margin: 0 0 10px 0; font-size: 24px;">Big Era 4 — Lesson 2: Student Submission</h1>';
-  html += '<table style="width: 100%; margin-top: 10px;">';
-  html += '<tr><td style="font-weight: bold; width: 150px;">Student Name:</td><td>' + escapeHtml(studentName) + '</td></tr>';
-  html += '<tr><td style="font-weight: bold;">Section:</td><td>' + escapeHtml(section) + '</td></tr>';
-  html += '<tr><td style="font-weight: bold;">Teacher:</td><td>' + escapeHtml(teacherName) + '</td></tr>';
-  html += '<tr><td style="font-weight: bold;">Submitted:</td><td>' + timestamp + '</td></tr>';
-  html += '</table>';
-  html += '</div>';
-
-  // Level 1 - Foundational Knowledge
-  html += buildLevel1Section(responses.level1 || {});
-
-  // Level 2 - Applied Knowledge
-  html += buildLevel2Section(responses.level2 || {});
-
-  // Level 3 - Extended Thinking
-  html += buildLevel3Section(responses.level3 || {});
-
-  // Level 4 - Synthesis
-  html += buildLevel4Section(responses.level4 || {});
-
-  // Footer
-  html += '<div style="background-color: #f5f0e1; padding: 15px; border-top: 1px solid #c8a951; margin-top: 20px; text-align: center; font-size: 12px; color: #666;">';
-  html += '<p style="margin: 0;">This submission was generated automatically from the Big Era 4 interactive lesson page.</p>';
-  html += '</div>';
-
-  html += '</body></html>';
-
-  return html;
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "ok", message: "Big Era 4 email backend is running." }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * Builds Level 1 section of the email
- */
-function buildLevel1Section(level1Data) {
-  var html = '<div style="margin-bottom: 20px; border-left: 5px solid #cd7f32; padding-left: 15px; padding-top: 10px; padding-bottom: 10px; padding-right: 15px; background-color: #fafaf8;">';
-  html += '<h2 style="color: #1a3a5c; margin-top: 0; font-size: 18px;">Level 1: Foundational Knowledge</h2>';
 
-  // Vocab Matching
-  if (level1Data.vocabMatching) {
-    html += '<div style="margin-bottom: 15px;">';
-    html += '<h3 style="color: #cd7f32; font-size: 14px; margin-bottom: 8px;">Vocabulary Matching</h3>';
-    html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">';
-    html += '<span style="background-color: #2a7d2a; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold; font-size: 12px;">Score: ' + (level1Data.vocabMatching.score || 0) + '</span>';
-    html += '</div>';
-    html += '</div>';
-  }
+// ===========================
+// Shared Email Styles
+// ===========================
+function getEmailStyles() {
+  var css = '';
+  css += 'body { font-family: Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }';
+  css += 'h1 { color: #1a3a5c; border-bottom: 3px solid #c8a951; padding-bottom: 10px; }';
+  css += 'h2 { color: #1a3a5c; margin-top: 30px; }';
+  css += 'h3 { color: #4a3728; margin-top: 20px; }';
+  css += '.header-info { background: #f5f0e1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }';
+  css += '.header-info p { margin: 5px 0; }';
+  css += '.level-section { border-left: 4px solid #ccc; padding-left: 15px; margin: 20px 0; }';
+  css += '.level-1 { border-color: #cd7f32; }';
+  css += '.level-2 { border-color: #8a9ea7; }';
+  css += '.level-3 { border-color: #c8a951; }';
+  css += '.level-4 { border-color: #1a3a5c; }';
+  css += '.activity { background: #fafafa; padding: 12px; border-radius: 6px; margin: 10px 0; }';
+  css += '.score { font-weight: bold; color: #2a7d2a; }';
+  css += '.response-text { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px; margin: 5px 0; white-space: pre-wrap; }';
+  css += '.label { font-weight: bold; color: #555; }';
+  return css;
+}
 
-  // Fill in the Blank
-  if (level1Data.fillInBlank) {
-    html += '<div style="margin-bottom: 15px;">';
-    html += '<h3 style="color: #cd7f32; font-size: 14px; margin-bottom: 8px;">Fill in the Blank</h3>';
-    html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">';
-    html += '<span style="background-color: #2a7d2a; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold; font-size: 12px;">Score: ' + (level1Data.fillInBlank.score || 0) + '</span>';
-    if (level1Data.fillInBlank.answers && level1Data.fillInBlank.answers.length > 0) {
-      html += '<div style="margin-top: 8px; font-size: 12px;">';
-      for (var i = 0; i < level1Data.fillInBlank.answers.length; i++) {
-        html += '<div style="margin-bottom: 4px;"><strong>Answer ' + (i + 1) + ':</strong> ' + escapeHtml(level1Data.fillInBlank.answers[i]) + '</div>';
-      }
-      html += '</div>';
-    }
-    html += '</div>';
-    html += '</div>';
-  }
-
+function buildEmailHeader(studentName, teacherName, section, lessonName, lessonTitle) {
+  var html = '';
+  html += '<!DOCTYPE html><html><head><style>' + getEmailStyles() + '</style></head><body>';
+  html += '<h1>' + escapeHtml(lessonTitle) + '</h1>';
+  html += '<div class="header-info">';
+  html += '<p><strong>Student:</strong> ' + escapeHtml(studentName) + '</p>';
+  html += '<p><strong>Teacher:</strong> ' + escapeHtml(teacherName) + '</p>';
+  html += '<p><strong>Section:</strong> ' + escapeHtml(section) + '</p>';
+  html += '<p><strong>Lesson:</strong> ' + escapeHtml(lessonName) + '</p>';
+  html += '<p><strong>Submitted:</strong> ' + new Date().toLocaleString("en-US", {timeZone: "Asia/Dubai"}) + ' (Dubai Time)</p>';
   html += '</div>';
   return html;
 }
 
-/**
- * Builds Level 2 section of the email
- */
-function buildLevel2Section(level2Data) {
-  var html = '<div style="margin-bottom: 20px; border-left: 5px solid #8a9ea7; padding-left: 15px; padding-top: 10px; padding-bottom: 10px; padding-right: 15px; background-color: #fafaf8;">';
-  html += '<h2 style="color: #1a3a5c; margin-top: 0; font-size: 18px;">Level 2: Applied Knowledge</h2>';
-
-  // Relay Chain
-  if (level2Data.relayChain) {
-    html += '<div style="margin-bottom: 15px;">';
-    html += '<h3 style="color: #8a9ea7; font-size: 14px; margin-bottom: 8px;">Relay Chain</h3>';
-    html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">';
-    html += '<span style="background-color: #2a7d2a; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold; font-size: 12px;">Score: ' + (level2Data.relayChain.score || 0) + '</span>';
-    if (level2Data.relayChain.order && level2Data.relayChain.order.length > 0) {
-      html += '<div style="margin-top: 8px; font-size: 12px;">';
-      html += '<strong>Order:</strong>';
-      html += '<ol style="margin: 4px 0; padding-left: 20px;">';
-      for (var i = 0; i < level2Data.relayChain.order.length; i++) {
-        html += '<li>' + escapeHtml(level2Data.relayChain.order[i]) + '</li>';
-      }
-      html += '</ol>';
-      html += '</div>';
-    }
-    html += '</div>';
-    html += '</div>';
-  }
-
-  // Explain It
-  if (level2Data.explainIt && level2Data.explainIt.length > 0) {
-    html += '<div style="margin-bottom: 15px;">';
-    html += '<h3 style="color: #8a9ea7; font-size: 14px; margin-bottom: 8px;">Explain It</h3>';
-    for (var i = 0; i < level2Data.explainIt.length; i++) {
-      var item = level2Data.explainIt[i];
-      html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">';
-      html += '<div style="font-weight: bold; color: #1a3a5c; margin-bottom: 6px; font-size: 12px;">Prompt: ' + escapeHtml(item.prompt || '') + '</div>';
-      html += '<div style="background-color: #f9f9f9; padding: 8px; border: 1px solid #e0e0e0; border-radius: 3px; margin-bottom: 6px; font-size: 12px; line-height: 1.5;">' + escapeHtml(item.response || '') + '</div>';
-      if (item.wordCount) {
-        html += '<div style="font-size: 11px; color: #666;">Word count: ' + item.wordCount + '</div>';
-      }
-      html += '</div>';
-    }
-    html += '</div>';
-  }
-
-  html += '</div>';
-  return html;
+function buildEmailFooter() {
+  return '<hr><p style="color:#999; font-size:12px;">This submission was generated automatically from the Big Era 4 interactive lesson page.</p></body></html>';
 }
 
-/**
- * Builds Level 3 section of the email
- */
-function buildLevel3Section(level3Data) {
-  var html = '<div style="margin-bottom: 20px; border-left: 5px solid #c8a951; padding-left: 15px; padding-top: 10px; padding-bottom: 10px; padding-right: 15px; background-color: #fafaf8;">';
-  html += '<h2 style="color: #1a3a5c; margin-top: 0; font-size: 18px;">Level 3: Extended Thinking</h2>';
 
-  // CER (Claim, Evidence, Reasoning)
-  if (level3Data.cer) {
-    html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">';
-    html += '<h3 style="color: #c8a951; font-size: 13px; margin-top: 0;">Claim, Evidence, Reasoning</h3>';
-
-    if (level3Data.cer.claim) {
-      html += '<div style="margin-bottom: 10px;">';
-      html += '<div style="font-weight: bold; color: #1a3a5c; font-size: 12px; margin-bottom: 4px;">Claim:</div>';
-      html += '<div style="background-color: #f9f9f9; padding: 8px; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 12px; line-height: 1.5;">' + escapeHtml(level3Data.cer.claim) + '</div>';
-      html += '</div>';
-    }
-
-    if (level3Data.cer.evidence) {
-      html += '<div style="margin-bottom: 10px;">';
-      html += '<div style="font-weight: bold; color: #1a3a5c; font-size: 12px; margin-bottom: 4px;">Evidence:</div>';
-      html += '<div style="background-color: #f9f9f9; padding: 8px; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 12px; line-height: 1.5;">' + escapeHtml(level3Data.cer.evidence) + '</div>';
-      html += '</div>';
-    }
-
-    if (level3Data.cer.reasoning) {
-      html += '<div style="margin-bottom: 10px;">';
-      html += '<div style="font-weight: bold; color: #1a3a5c; font-size: 12px; margin-bottom: 4px;">Reasoning:</div>';
-      html += '<div style="background-color: #f9f9f9; padding: 8px; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 12px; line-height: 1.5;">' + escapeHtml(level3Data.cer.reasoning) + '</div>';
-      html += '</div>';
-    }
-
-    html += '</div>';
-  }
-
-  html += '</div>';
-  return html;
-}
-
-/**
- * Builds Level 4 section of the email
- */
-function buildLevel4Section(level4Data) {
-  var html = '<div style="margin-bottom: 20px; border-left: 5px solid #1a3a5c; padding-left: 15px; padding-top: 10px; padding-bottom: 10px; padding-right: 15px; background-color: #fafaf8;">';
-  html += '<h2 style="color: #1a3a5c; margin-top: 0; font-size: 18px;">Level 4: Synthesis</h2>';
-
-  // Synectics
-  if (level4Data.synectics && level4Data.synectics.length > 0) {
-    html += '<h3 style="color: #1a3a5c; font-size: 14px; margin-bottom: 8px;">Synectics</h3>';
-    for (var i = 0; i < level4Data.synectics.length; i++) {
-      var item = level4Data.synectics[i];
-      html += '<div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">';
-      html += '<div style="font-weight: bold; color: #1a3a5c; margin-bottom: 6px; font-size: 12px;">Object: ' + escapeHtml(item.object || '') + '</div>';
-      html += '<div style="background-color: #f9f9f9; padding: 8px; border: 1px solid #e0e0e0; border-radius: 3px; margin-bottom: 6px; font-size: 12px; line-height: 1.5;">' + escapeHtml(item.response || '') + '</div>';
-      if (item.wordCount) {
-        html += '<div style="font-size: 11px; color: #666;">Word count: ' + item.wordCount + '</div>';
-      }
-      html += '</div>';
-    }
-  }
-
-  html += '</div>';
-  return html;
-}
-
-/**
- * Builds the plain text email body
- */
-function buildPlainTextEmail(studentName, teacherName, section, lessonName, responses) {
-  var timestamp = Utilities.formatDate(new Date(), DUBAI_TIMEZONE, "MMMM dd, yyyy 'at' hh:mm a z");
-
-  var text = "BIG ERA 4 — LESSON 2: STUDENT SUBMISSION\n";
-  text += "================================================\n\n";
-
-  text += "Student Name: " + studentName + "\n";
-  text += "Section: " + section + "\n";
-  text += "Teacher: " + teacherName + "\n";
-  text += "Submitted: " + timestamp + "\n\n";
+// ===========================
+// LESSON 1 — HTML Email Builder
+// ===========================
+function buildLesson1HTML(studentName, teacherName, section, lessonName, responses) {
+  var html = buildEmailHeader(studentName, teacherName, section, lessonName, 'Big Era 4 — Lesson 1: Student Submission');
 
   // Level 1
-  text += "LEVEL 1: FOUNDATIONAL KNOWLEDGE\n";
-  text += "--------------------------------\n";
+  html += '<div class="level-section level-1">';
+  html += '<h2>Level 1: Knowledge Recall</h2>';
+
   if (responses.level1) {
-    if (responses.level1.vocabMatching) {
-      text += "Vocabulary Matching\n";
-      text += "Score: " + (responses.level1.vocabMatching.score || 0) + "\n\n";
-    }
-    if (responses.level1.fillInBlank) {
-      text += "Fill in the Blank\n";
-      text += "Score: " + (responses.level1.fillInBlank.score || 0) + "\n";
-      if (responses.level1.fillInBlank.answers && responses.level1.fillInBlank.answers.length > 0) {
-        for (var i = 0; i < responses.level1.fillInBlank.answers.length; i++) {
-          text += "Answer " + (i + 1) + ": " + responses.level1.fillInBlank.answers[i] + "\n";
+    var l1 = responses.level1;
+
+    html += '<div class="activity">';
+    html += '<h3>1.1 Vocabulary Matching</h3>';
+    if (l1.vocabMatching) {
+      html += '<p class="score">Score: ' + (l1.vocabMatching.score || 'Not completed') + '</p>';
+      if (l1.vocabMatching.matches) {
+        html += '<ul>';
+        for (var term in l1.vocabMatching.matches) {
+          html += '<li><strong>' + escapeHtml(term) + '</strong> → ' + escapeHtml(l1.vocabMatching.matches[term]) + '</li>';
         }
+        html += '</ul>';
       }
-      text += "\n";
-    }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.2 Timeline Sorting</h3>';
+    if (l1.timelineSorting) {
+      html += '<p class="score">Score: ' + (l1.timelineSorting.score || 'Not completed') + '</p>';
+      if (l1.timelineSorting.order) {
+        html += '<ol>';
+        for (var i = 0; i < l1.timelineSorting.order.length; i++) {
+          html += '<li>' + escapeHtml(l1.timelineSorting.order[i]) + '</li>';
+        }
+        html += '</ol>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.3 Population Fill-in-the-Blank</h3>';
+    if (l1.fillInBlank) {
+      html += '<p class="score">Score: ' + (l1.fillInBlank.score || 'Not completed') + '</p>';
+      if (l1.fillInBlank.answers) {
+        html += '<ul>';
+        for (var j = 0; j < l1.fillInBlank.answers.length; j++) {
+          html += '<li>' + escapeHtml(l1.fillInBlank.answers[j]) + '</li>';
+        }
+        html += '</ul>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.4 Empire-City Matching</h3>';
+    if (l1.cityMatching) {
+      html += '<p class="score">Score: ' + (l1.cityMatching.score || 'Not completed') + '</p>';
+      if (l1.cityMatching.matches) {
+        html += '<ul>';
+        for (var city in l1.cityMatching.matches) {
+          html += '<li><strong>' + escapeHtml(city) + '</strong> → ' + escapeHtml(l1.cityMatching.matches[city]) + '</li>';
+        }
+        html += '</ul>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
   }
+  html += '</div>';
 
   // Level 2
-  text += "LEVEL 2: APPLIED KNOWLEDGE\n";
-  text += "------------------------\n";
+  html += '<div class="level-section level-2">';
+  html += '<h2>Level 2: Explain & Apply</h2>';
+
   if (responses.level2) {
-    if (responses.level2.relayChain) {
-      text += "Relay Chain\n";
-      text += "Score: " + (responses.level2.relayChain.score || 0) + "\n";
-      if (responses.level2.relayChain.order && responses.level2.relayChain.order.length > 0) {
-        text += "Order:\n";
-        for (var i = 0; i < responses.level2.relayChain.order.length; i++) {
-          text += (i + 1) + ". " + responses.level2.relayChain.order[i] + "\n";
+    var l2 = responses.level2;
+
+    html += '<div class="activity">';
+    html += '<h3>2.1 Cause-and-Effect Chain</h3>';
+    if (l2.causeEffect) {
+      html += '<p class="score">Score: ' + (l2.causeEffect.score || 'Not completed') + '</p>';
+      if (l2.causeEffect.order) {
+        html += '<ol>';
+        for (var k = 0; k < l2.causeEffect.order.length; k++) {
+          html += '<li>' + escapeHtml(l2.causeEffect.order[k]) + '</li>';
+        }
+        html += '</ol>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>2.2 Explain It — Written Responses</h3>';
+    if (l2.explainIt) {
+      for (var q = 0; q < l2.explainIt.length; q++) {
+        var resp = l2.explainIt[q];
+        html += '<div class="response-text">';
+        html += '<p class="label">Prompt ' + (q + 1) + ':</p>';
+        html += '<p>' + escapeHtml(resp.prompt || '') + '</p>';
+        html += '<p class="label">Response (' + (resp.wordCount || 0) + ' words):</p>';
+        html += '<p>' + escapeHtml(resp.response || 'No response') + '</p>';
+        html += '</div>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>2.3 Trade Goods Categorization</h3>';
+    if (l2.tradeGoods) {
+      html += '<p class="score">Score: ' + (l2.tradeGoods.score || 'Not completed') + '</p>';
+      if (l2.tradeGoods.categories) {
+        for (var cat in l2.tradeGoods.categories) {
+          html += '<p><strong>' + escapeHtml(cat) + ':</strong> ' + escapeHtml(l2.tradeGoods.categories[cat].join(', ')) + '</p>';
         }
       }
-      text += "\n";
-    }
-    if (responses.level2.explainIt && responses.level2.explainIt.length > 0) {
-      text += "Explain It\n";
-      for (var i = 0; i < responses.level2.explainIt.length; i++) {
-        var item = responses.level2.explainIt[i];
-        text += "Prompt: " + (item.prompt || "") + "\n";
-        text += "Response: " + (item.response || "") + "\n";
-        if (item.wordCount) {
-          text += "Word count: " + item.wordCount + "\n";
-        }
-        text += "\n";
-      }
-    }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
   }
+  html += '</div>';
 
   // Level 3
-  text += "LEVEL 3: EXTENDED THINKING\n";
-  text += "-------------------------\n";
-  if (responses.level3 && responses.level3.cer) {
-    text += "Claim, Evidence, Reasoning\n";
-    if (responses.level3.cer.claim) {
-      text += "Claim: " + responses.level3.cer.claim + "\n";
-    }
-    if (responses.level3.cer.evidence) {
-      text += "Evidence: " + responses.level3.cer.evidence + "\n";
-    }
-    if (responses.level3.cer.reasoning) {
-      text += "Reasoning: " + responses.level3.cer.reasoning + "\n";
-    }
-    text += "\n";
+  html += '<div class="level-section level-3">';
+  html += '<h2>Level 3: Analyze with Evidence</h2>';
+
+  if (responses.level3) {
+    var l3 = responses.level3;
+
+    html += '<div class="activity">';
+    html += '<h3>3.1 Consequences Analysis</h3>';
+    if (l3.consequences) {
+      html += '<p class="score">Sorting Score: ' + (l3.consequences.score || 'Not completed') + '</p>';
+      if (l3.consequences.positive) {
+        html += '<p><strong>Positive:</strong> ' + escapeHtml(l3.consequences.positive.join(', ')) + '</p>';
+      }
+      if (l3.consequences.negative) {
+        html += '<p><strong>Negative:</strong> ' + escapeHtml(l3.consequences.negative.join(', ')) + '</p>';
+      }
+      if (l3.consequences.positiveExplanation) {
+        html += '<div class="response-text"><p class="label">Why positive consequences were beneficial:</p>';
+        html += '<p>' + escapeHtml(l3.consequences.positiveExplanation) + '</p></div>';
+      }
+      if (l3.consequences.negativeExplanation) {
+        html += '<div class="response-text"><p class="label">Why negative consequences were harmful:</p>';
+        html += '<p>' + escapeHtml(l3.consequences.negativeExplanation) + '</p></div>';
+      }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>3.2 Claim-Evidence-Reasoning</h3>';
+    if (l3.cer) {
+      html += '<div class="response-text"><p class="label">Claim:</p>';
+      html += '<p>' + escapeHtml(l3.cer.claim || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Evidence:</p>';
+      html += '<p>' + escapeHtml(l3.cer.evidence || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Reasoning:</p>';
+      html += '<p>' + escapeHtml(l3.cer.reasoning || 'No response') + '</p></div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
   }
+  html += '</div>';
 
   // Level 4
-  text += "LEVEL 4: SYNTHESIS\n";
-  text += "-----------------\n";
-  if (responses.level4 && responses.level4.synectics && responses.level4.synectics.length > 0) {
-    text += "Synectics\n";
-    for (var i = 0; i < responses.level4.synectics.length; i++) {
-      var item = responses.level4.synectics[i];
-      text += "Object: " + (item.object || "") + "\n";
-      text += "Response: " + (item.response || "") + "\n";
-      if (item.wordCount) {
-        text += "Word count: " + item.wordCount + "\n";
+  html += '<div class="level-section level-4">';
+  html += '<h2>Level 4: Connect & Create</h2>';
+
+  if (responses.level4) {
+    var l4 = responses.level4;
+
+    html += '<div class="activity">';
+    html += '<h3>4.1 "Our Big Era" — Modern Parallel Essay</h3>';
+    if (l4.modernEssay) {
+      html += '<div class="response-text">';
+      html += '<p class="label">Response (' + (l4.modernEssay.wordCount || 0) + ' words):</p>';
+      html += '<p>' + escapeHtml(l4.modernEssay.response || 'No response') + '</p>';
+      html += '</div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>4.2 Synectics — "Big Era IV Is Like a ___"</h3>';
+    if (l4.synectics && l4.synectics.length > 0) {
+      for (var s = 0; s < l4.synectics.length; s++) {
+        var syn = l4.synectics[s];
+        html += '<div class="response-text">';
+        html += '<p class="label">"Big Era IV is like a ' + escapeHtml(syn.object || '?') + ' because..."</p>';
+        html += '<p>(' + (syn.wordCount || 0) + ' words): ' + escapeHtml(syn.response || 'No response') + '</p>';
+        html += '</div>';
       }
-      text += "\n";
-    }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
   }
+  html += '</div>';
 
-  text += "================================================\n";
-  text += "This submission was generated automatically from the Big Era 4 interactive lesson page.\n";
+  html += buildEmailFooter();
+  return html;
+}
 
+
+// ===========================
+// LESSON 2 — HTML Email Builder
+// ===========================
+function buildLesson2HTML(studentName, teacherName, section, lessonName, responses) {
+  var html = buildEmailHeader(studentName, teacherName, section, lessonName, 'Big Era 4 — Lesson 2: The Hardware (Mechanics of the Silk Road)');
+
+  // Level 1
+  html += '<div class="level-section level-1">';
+  html += '<h2>Level 1: Knowledge Recall</h2>';
+
+  if (responses.level1) {
+    var l1 = responses.level1;
+
+    html += '<div class="activity">';
+    html += '<h3>1.1 Vocabulary Matching</h3>';
+    if (l1.vocabMatching && typeof l1.vocabMatching === 'object') {
+      var vocabKeys = Object.keys(l1.vocabMatching);
+      if (vocabKeys.length > 0) {
+        html += '<p class="score">Matched: ' + vocabKeys.length + ' terms</p>';
+        html += '<ul>';
+        for (var v = 0; v < vocabKeys.length; v++) {
+          html += '<li><strong>' + escapeHtml(vocabKeys[v]) + '</strong> → ' + escapeHtml(l1.vocabMatching[vocabKeys[v]]) + '</li>';
+        }
+        html += '</ul>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.2 Silk Road Geography Fill-in-the-Blank</h3>';
+    if (l1.fillInBlanks && typeof l1.fillInBlanks === 'object') {
+      var blankKeys = Object.keys(l1.fillInBlanks);
+      if (blankKeys.length > 0) {
+        html += '<p class="score">Answered: ' + blankKeys.length + ' of 6 blanks</p>';
+        html += '<ol>';
+        for (var b = 0; b < blankKeys.length; b++) {
+          html += '<li>Blank ' + escapeHtml(blankKeys[b]) + ': <strong>' + escapeHtml(l1.fillInBlanks[blankKeys[b]]) + '</strong></li>';
+        }
+        html += '</ol>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 2
+  html += '<div class="level-section level-2">';
+  html += '<h2>Level 2: Explain & Apply</h2>';
+
+  if (responses.level2) {
+    var l2 = responses.level2;
+
+    html += '<div class="activity">';
+    html += '<h3>2.1 The Relay System Chain</h3>';
+    if (l2.relayChain && l2.relayChain.length > 0) {
+      html += '<p class="score">Steps placed: ' + l2.relayChain.length + ' of 6</p>';
+      html += '<ol>';
+      for (var r = 0; r < l2.relayChain.length; r++) {
+        html += '<li>' + escapeHtml(l2.relayChain[r].content || l2.relayChain[r]) + '</li>';
+      }
+      html += '</ol>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>2.2 Explain It — Written Responses</h3>';
+    if (l2.explainIt) {
+      var ei = l2.explainIt;
+
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 1: Why were animals so important for Silk Road trade?</p>';
+      var p1text = ei.prompt1 || '';
+      var p1words = p1text.trim().length > 0 ? p1text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p1words + ' words):</p>';
+      html += '<p>' + escapeHtml(p1text || 'No response') + '</p>';
+      html += '</div>';
+
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 2: Why did the price of silk increase between China and Rome?</p>';
+      var p2text = ei.prompt2 || '';
+      var p2words = p2text.trim().length > 0 ? p2text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p2words + ' words):</p>';
+      html += '<p>' + escapeHtml(p2text || 'No response') + '</p>';
+      html += '</div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 3
+  html += '<div class="level-section level-3">';
+  html += '<h2>Level 3: Analyze with Evidence</h2>';
+
+  if (responses.level3) {
+    var l3 = responses.level3;
+
+    html += '<div class="activity">';
+    html += '<h3>3.1 Claim-Evidence-Reasoning (CER)</h3>';
+    html += '<p style="font-style:italic; color:#666; margin-bottom:10px;">Was the Silk Road a "long-distance trade route" or a "chain of short-distance trades"?</p>';
+    if (l3.cer) {
+      html += '<div class="response-text"><p class="label">Claim:</p>';
+      html += '<p>' + escapeHtml(l3.cer.claim || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Evidence:</p>';
+      html += '<p>' + escapeHtml(l3.cer.evidence || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Reasoning:</p>';
+      html += '<p>' + escapeHtml(l3.cer.reasoning || 'No response') + '</p></div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 4
+  html += '<div class="level-section level-4">';
+  html += '<h2>Level 4: Connect & Create</h2>';
+
+  if (responses.level4) {
+    var l4 = responses.level4;
+
+    html += '<div class="activity">';
+    html += '<h3>4.1 Synectics — "The Silk Road Is Like a ___"</h3>';
+    if (l4.synectics && typeof l4.synectics === 'object') {
+      var synKeys = Object.keys(l4.synectics);
+      if (synKeys.length > 0) {
+        for (var sk = 0; sk < synKeys.length; sk++) {
+          var synObj = synKeys[sk];
+          var synText = l4.synectics[synObj] || '';
+          var synWords = synText.trim().length > 0 ? synText.trim().split(/\s+/).length : 0;
+          html += '<div class="response-text">';
+          html += '<p class="label">"The Silk Road is like ' + escapeHtml(synObj) + ' because..."</p>';
+          html += '<p>(' + synWords + ' words): ' + escapeHtml(synText || 'No response') + '</p>';
+          html += '</div>';
+        }
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += buildEmailFooter();
+  return html;
+}
+
+
+// ===========================
+// Plain Text Email Builder (fallback — works for both lessons)
+// ===========================
+function buildEmailPlain(studentName, teacherName, section, lessonName, responses) {
+  var text = '';
+  text += 'BIG ERA 4 — ' + lessonName.toUpperCase() + ': STUDENT SUBMISSION\n';
+  text += '==========================================\n\n';
+  text += 'Student: ' + studentName + '\n';
+  text += 'Teacher: ' + teacherName + '\n';
+  text += 'Section: ' + section + '\n';
+  text += 'Lesson: ' + lessonName + '\n';
+  text += 'Submitted: ' + new Date().toLocaleString("en-US", {timeZone: "Asia/Dubai"}) + ' (Dubai Time)\n\n';
+  text += JSON.stringify(responses, null, 2);
   return text;
 }
 
-/**
- * Escapes HTML special characters to prevent injection
- */
 function escapeHtml(text) {
   if (!text) return '';
-  return text
+  return text.toString()
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
