@@ -1462,9 +1462,9 @@
 
             fetch(GOOGLE_APPS_SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify(data),
-                mode: 'no-cors'
-            }).then(() => {
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(data)
+            }).then(response => response.text()).then(result => {
                 showModal();
             }).catch(error => {
                 alert('Error submitting work. Please try again.');

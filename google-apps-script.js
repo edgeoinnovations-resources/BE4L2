@@ -55,6 +55,10 @@ function doPost(e) {
     var htmlBody, plainBody;
     if (lessonName.indexOf("Lesson 2") !== -1) {
       htmlBody = buildLesson2HTML(studentName, teacherName, section, lessonName, responses);
+    } else if (lessonName.indexOf("Lesson 3") !== -1) {
+      htmlBody = buildLesson3HTML(studentName, teacherName, section, lessonName, responses);
+    } else if (lessonName.indexOf("Lesson 4") !== -1) {
+      htmlBody = buildLesson4HTML(studentName, teacherName, section, lessonName, responses);
     } else {
       htmlBody = buildLesson1HTML(studentName, teacherName, section, lessonName, responses);
     }
@@ -472,7 +476,271 @@ function buildLesson2HTML(studentName, teacherName, section, lessonName, respons
 
 
 // ===========================
-// Plain Text Email Builder (fallback — works for both lessons)
+// LESSON 3 — HTML Email Builder
+// ===========================
+function buildLesson3HTML(studentName, teacherName, section, lessonName, responses) {
+  var html = buildEmailHeader(studentName, teacherName, section, lessonName, 'Big Era 4 — Lesson 3: Student Submission');
+
+  // Level 1
+  html += '<div class="level-section level-1">';
+  html += '<h2>Level 1: Knowledge Recall</h2>';
+  if (responses.level1) {
+    var l1 = responses.level1;
+    html += '<div class="activity">';
+    html += '<h3>1.1 Vocabulary Matching</h3>';
+    if (l1.vocabMatching && typeof l1.vocabMatching === 'object') {
+      var vocabKeys = Object.keys(l1.vocabMatching);
+      if (vocabKeys.length > 0) {
+        html += '<p class="score">Matched: ' + vocabKeys.length + ' terms</p>';
+        html += '<ul>';
+        for (var v = 0; v < vocabKeys.length; v++) {
+          html += '<li><strong>' + escapeHtml(vocabKeys[v]) + '</strong> → ' + escapeHtml(l1.vocabMatching[vocabKeys[v]]) + '</li>';
+        }
+        html += '</ul>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.2 Fill-in-the-Blank</h3>';
+    if (l1.fillInBlanks && typeof l1.fillInBlanks === 'object') {
+      var blankKeys = Object.keys(l1.fillInBlanks);
+      if (blankKeys.length > 0) {
+        html += '<p class="score">Answered: ' + blankKeys.length + ' blanks</p>';
+        html += '<ol>';
+        for (var b = 0; b < blankKeys.length; b++) {
+          html += '<li>Blank ' + escapeHtml(blankKeys[b]) + ': <strong>' + escapeHtml(l1.fillInBlanks[blankKeys[b]]) + '</strong></li>';
+        }
+        html += '</ol>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 2
+  html += '<div class="level-section level-2">';
+  html += '<h2>Level 2: Explain & Apply</h2>';
+  if (responses.level2) {
+    var l2 = responses.level2;
+    html += '<div class="activity">';
+    html += '<h3>2.1 Timeline Ordering</h3>';
+    if (l2.timelineOrder && l2.timelineOrder.length > 0) {
+      html += '<p class="score">Steps placed: ' + l2.timelineOrder.length + '</p>';
+      html += '<ol>';
+      for (var t = 0; t < l2.timelineOrder.length; t++) {
+        html += '<li>' + escapeHtml(l2.timelineOrder[t].content || l2.timelineOrder[t]) + '</li>';
+      }
+      html += '</ol>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>2.2 Explain It — Written Responses</h3>';
+    if (l2.explainIt) {
+      var ei = l2.explainIt;
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 1:</p>';
+      var p1text = ei.prompt1 || '';
+      var p1words = p1text.trim().length > 0 ? p1text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p1words + ' words):</p>';
+      html += '<p>' + escapeHtml(p1text || 'No response') + '</p>';
+      html += '</div>';
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 2:</p>';
+      var p2text = ei.prompt2 || '';
+      var p2words = p2text.trim().length > 0 ? p2text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p2words + ' words):</p>';
+      html += '<p>' + escapeHtml(p2text || 'No response') + '</p>';
+      html += '</div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 3
+  html += '<div class="level-section level-3">';
+  html += '<h2>Level 3: Analyze with Evidence</h2>';
+  if (responses.level3) {
+    var l3 = responses.level3;
+    html += '<div class="activity">';
+    html += '<h3>3.1 Claim-Evidence-Reasoning (CER)</h3>';
+    if (l3.cer) {
+      html += '<div class="response-text"><p class="label">Claim:</p>';
+      html += '<p>' + escapeHtml(l3.cer.claim || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Evidence:</p>';
+      html += '<p>' + escapeHtml(l3.cer.evidence || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Reasoning:</p>';
+      html += '<p>' + escapeHtml(l3.cer.reasoning || 'No response') + '</p></div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 4
+  html += '<div class="level-section level-4">';
+  html += '<h2>Level 4: Connect & Create</h2>';
+  if (responses.level4) {
+    var l4 = responses.level4;
+    html += '<div class="activity">';
+    html += '<h3>4.1 Synectics</h3>';
+    if (l4.synectics && typeof l4.synectics === 'object') {
+      var synKeys = Object.keys(l4.synectics);
+      if (synKeys.length > 0) {
+        for (var sk = 0; sk < synKeys.length; sk++) {
+          var synObj = synKeys[sk];
+          var synText = l4.synectics[synObj] || '';
+          var synWords = synText.trim().length > 0 ? synText.trim().split(/\s+/).length : 0;
+          html += '<div class="response-text">';
+          html += '<p class="label">"It is like ' + escapeHtml(synObj) + ' because..."</p>';
+          html += '<p>(' + synWords + ' words): ' + escapeHtml(synText || 'No response') + '</p>';
+          html += '</div>';
+        }
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += buildEmailFooter();
+  return html;
+}
+
+
+// ===========================
+// LESSON 4 — HTML Email Builder
+// ===========================
+function buildLesson4HTML(studentName, teacherName, section, lessonName, responses) {
+  var html = buildEmailHeader(studentName, teacherName, section, lessonName, 'Big Era 4 — Lesson 4: Student Submission');
+
+  // Level 1
+  html += '<div class="level-section level-1">';
+  html += '<h2>Level 1: Knowledge Recall</h2>';
+  if (responses.level1) {
+    var l1 = responses.level1;
+    html += '<div class="activity">';
+    html += '<h3>1.1 Vocabulary Matching</h3>';
+    if (l1.vocabMatching && typeof l1.vocabMatching === 'object') {
+      var vocabKeys = Object.keys(l1.vocabMatching);
+      if (vocabKeys.length > 0) {
+        html += '<p class="score">Matched: ' + vocabKeys.length + ' terms</p>';
+        html += '<ul>';
+        for (var v = 0; v < vocabKeys.length; v++) {
+          html += '<li><strong>' + escapeHtml(vocabKeys[v]) + '</strong> → ' + escapeHtml(l1.vocabMatching[vocabKeys[v]]) + '</li>';
+        }
+        html += '</ul>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>1.2 Fill-in-the-Blank</h3>';
+    if (l1.fillInBlanks && typeof l1.fillInBlanks === 'object') {
+      var blankKeys = Object.keys(l1.fillInBlanks);
+      if (blankKeys.length > 0) {
+        html += '<p class="score">Answered: ' + blankKeys.length + ' blanks</p>';
+        html += '<ol>';
+        for (var b = 0; b < blankKeys.length; b++) {
+          html += '<li>Blank ' + escapeHtml(blankKeys[b]) + ': <strong>' + escapeHtml(l1.fillInBlanks[blankKeys[b]]) + '</strong></li>';
+        }
+        html += '</ol>';
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 2
+  html += '<div class="level-section level-2">';
+  html += '<h2>Level 2: Explain & Apply</h2>';
+  if (responses.level2) {
+    var l2 = responses.level2;
+    html += '<div class="activity">';
+    html += '<h3>2.1 Cause-and-Effect Chain</h3>';
+    if (l2.causeEffectChain && l2.causeEffectChain.length > 0) {
+      html += '<p class="score">Steps placed: ' + l2.causeEffectChain.length + '</p>';
+      html += '<ol>';
+      for (var c = 0; c < l2.causeEffectChain.length; c++) {
+        html += '<li>' + escapeHtml(l2.causeEffectChain[c].content || l2.causeEffectChain[c]) + '</li>';
+      }
+      html += '</ol>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+
+    html += '<div class="activity">';
+    html += '<h3>2.2 Explain It — Written Responses</h3>';
+    if (l2.explainIt) {
+      var ei = l2.explainIt;
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 1:</p>';
+      var p1text = ei.prompt1 || '';
+      var p1words = p1text.trim().length > 0 ? p1text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p1words + ' words):</p>';
+      html += '<p>' + escapeHtml(p1text || 'No response') + '</p>';
+      html += '</div>';
+      html += '<div class="response-text">';
+      html += '<p class="label">Prompt 2:</p>';
+      var p2text = ei.prompt2 || '';
+      var p2words = p2text.trim().length > 0 ? p2text.trim().split(/\s+/).length : 0;
+      html += '<p class="label">Response (' + p2words + ' words):</p>';
+      html += '<p>' + escapeHtml(p2text || 'No response') + '</p>';
+      html += '</div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 3
+  html += '<div class="level-section level-3">';
+  html += '<h2>Level 3: Analyze with Evidence</h2>';
+  if (responses.level3) {
+    var l3 = responses.level3;
+    html += '<div class="activity">';
+    html += '<h3>3.1 Claim-Evidence-Reasoning (CER)</h3>';
+    if (l3.cer) {
+      html += '<div class="response-text"><p class="label">Claim:</p>';
+      html += '<p>' + escapeHtml(l3.cer.claim || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Evidence:</p>';
+      html += '<p>' + escapeHtml(l3.cer.evidence || 'No response') + '</p></div>';
+      html += '<div class="response-text"><p class="label">Reasoning:</p>';
+      html += '<p>' + escapeHtml(l3.cer.reasoning || 'No response') + '</p></div>';
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Level 4
+  html += '<div class="level-section level-4">';
+  html += '<h2>Level 4: Connect & Create</h2>';
+  if (responses.level4) {
+    var l4 = responses.level4;
+    html += '<div class="activity">';
+    html += '<h3>4.1 Synectics</h3>';
+    if (l4.synectics && typeof l4.synectics === 'object') {
+      var synKeys = Object.keys(l4.synectics);
+      if (synKeys.length > 0) {
+        for (var sk = 0; sk < synKeys.length; sk++) {
+          var synObj = synKeys[sk];
+          var synText = l4.synectics[synObj] || '';
+          var synWords = synText.trim().length > 0 ? synText.trim().split(/\s+/).length : 0;
+          html += '<div class="response-text">';
+          html += '<p class="label">"It is like ' + escapeHtml(synObj) + ' because..."</p>';
+          html += '<p>(' + synWords + ' words): ' + escapeHtml(synText || 'No response') + '</p>';
+          html += '</div>';
+        }
+      } else { html += '<p><em>Not completed</em></p>'; }
+    } else { html += '<p><em>Not completed</em></p>'; }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += buildEmailFooter();
+  return html;
+}
+
+
+// ===========================
+// Plain Text Email Builder (fallback — works for all lessons)
 // ===========================
 function buildEmailPlain(studentName, teacherName, section, lessonName, responses) {
   var text = '';
